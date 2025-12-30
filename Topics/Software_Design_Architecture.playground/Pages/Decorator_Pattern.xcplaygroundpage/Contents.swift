@@ -1,4 +1,4 @@
-import SwiftUI
+import Foundation
 
 // MARK: - Decorator Pattern
 
