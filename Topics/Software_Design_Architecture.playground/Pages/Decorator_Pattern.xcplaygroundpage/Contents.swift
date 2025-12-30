@@ -84,3 +84,63 @@ let loggedRepo: UserRepository = LoggingUserRepository(DDbUserRepository())
 loggedRepo.save(user: "Enes")
 
 print(loggedRepo.findById("123"))
+
+// MARK: Price Decorator
+
+protocol Price {
+    func getPrice() -> Double
+}
+
+final class BasePrice: Price {
+    private let price: Double
+
+    init(_ price: Double) {
+        self.price = price
+    }
+
+    func getPrice() -> Double {
+        price
+    }
+}
+
+class PriceDecorator: Price {
+    internal let wrappee: Price
+
+    init(_ wrappee: Price) {
+        self.wrappee = wrappee
+    }
+
+    func getPrice() -> Double {
+        wrappee.getPrice()
+    }
+}
+
+final class KDVDecorator: PriceDecorator {
+    override func getPrice() -> Double {
+        let base = super.getPrice()
+        return base + (base * 0.18)
+    }
+}
+
+final class OTVDecorator: PriceDecorator {
+    override func getPrice() -> Double {
+        let base = super.getPrice()
+        return base + (base * 0.10)
+    }
+}
+
+final class DiscountDecorator: PriceDecorator {
+    override func getPrice() -> Double {
+        let base = super.getPrice()
+        return base - (base * 0.005)
+    }
+}
+
+let price1: Price = KDVDecorator(BasePrice(100))
+print(price1.getPrice())
+
+let price2: Price = OTVDecorator(KDVDecorator(BasePrice(100)))
+print(price2.getPrice())
+
+let price3: Price = DiscountDecorator(OTVDecorator(KDVDecorator(BasePrice(100))))
+print(price3.getPrice())
