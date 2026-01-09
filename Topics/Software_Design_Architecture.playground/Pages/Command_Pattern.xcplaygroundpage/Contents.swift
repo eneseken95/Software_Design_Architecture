@@ -4,6 +4,7 @@ import Foundation
 
 protocol Command {
     func execute()
+    func undo()
 }
 
 final class Light {
@@ -26,6 +27,10 @@ final class LightOnCommand: Command {
     func execute() {
         light.on()
     }
+
+    func undo() {
+        light.off()
+    }
 }
 
 final class LightOffCommand: Command {
@@ -38,10 +43,15 @@ final class LightOffCommand: Command {
     func execute() {
         light.off()
     }
+
+    func undo() {
+        light.on()
+    }
 }
 
 final class RemoteControl {
     private var commands: [Command] = []
+    private var history: [Command] = []
 
     func addCommand(_ command: Command) {
         commands.append(command)
@@ -50,7 +60,13 @@ final class RemoteControl {
     func pressButtons() {
         for command in commands {
             command.execute()
+            history.append(command)
         }
+    }
+
+    func undoLast() {
+        guard let last = history.popLast() else { return }
+        last.undo()
     }
 }
 
@@ -62,3 +78,5 @@ let remote = RemoteControl()
 remote.addCommand(LightOnCommand(light: light))
 remote.addCommand(LightOffCommand(light: light))
 remote.pressButtons()
+
+remote.undoLast()
